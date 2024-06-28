@@ -121,11 +121,39 @@ Csv * parse(const char * filePath) {
                 value = (char * ) realloc(value, (valueLength + 1) * sizeof(char));
                 if (value) {
                   value[valueLength] = '\0';
-                  int colindex = valueCount % csv -> totalColumns;
+                  int colIndex = valueCount % csv -> totalColumns;
                   // store inside column's values property (csv->columns[colindex].values)
+                  if (csv->totalRows == 0) {
+                    char **values = (char **) malloc(sizeof(char *));
+                    if (values) {
+                        csv->columns[colIndex].values = values;
+                    }
+                    else {
+                        // error handle
+                    }
+                  }  
+                  else {
+                    char **values = csv->columns[colIndex].values;
+                    values = (char **) realloc(values, (csv->totalRows + 1) * sizeof(char *));
+                    if (values) {
+                        csv->columns[colIndex].values = values;
+                    }
+                    else {
+                        // error handle
+                    }
+                  }
+                  char *cellValue = (char *) malloc((valueLength + 1) * sizeof(char));
+                  if (cellValue) {
+                    strcpy(cellValue, value);
+                    csv->columns[colIndex].values[csv->totalRows] = cellValue;
+                  }
+                  else {
+                    // error handle
+                  }
                   if (code == NEWLINE_CHARACTER) {
                     csv -> totalRows++;
                   }
+                  value = NULL;
                   valueLength = 0;
                   valueCount++;
                 } else {
