@@ -48,7 +48,7 @@ struct Csv {
 }
 typedef Csv;
 
-bool endsWith(char * template, char * suffix) {
+bool endsWith(const char * template, const char * suffix) {
   int templateLength = strlen(template);
   int suffixLength = strlen(suffix);
   return templateLength >= suffixLength && strcmp(template + templateLength - suffixLength, suffix) == 0;
