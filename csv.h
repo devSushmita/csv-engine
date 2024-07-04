@@ -115,65 +115,61 @@ Csv * parse(const char * filePath) {
           // value parsing logic
           int code, valueCount = 0, valueLength = 0, index;
           char * value = NULL;
-          while ((code = fgetc(fp)) != EOF) {
-            {
-              if (code == COMMA_CHARACTER || code == NEWLINE_CHARACTER) {
-                value = (char * ) realloc(value, (valueLength + 1) * sizeof(char));
-                if (value) {
-                  value[valueLength] = '\0';
-                  int colIndex = valueCount % csv -> totalColumns;
-                  // store inside column's values property (csv->columns[colindex].values)
-                  if (csv->totalRows == 0) {
-                    char **values = (char **) malloc(sizeof(char *));
-                    if (values) {
-                        csv->columns[colIndex].values = values;
-                    }
-                    else {
-                        // error handle
-                    }
-                  }  
-                  else {
-                    char **values = csv->columns[colIndex].values;
-                    values = (char **) realloc(values, (csv->totalRows + 1) * sizeof(char *));
-                    if (values) {
-                        csv->columns[colIndex].values = values;
-                    }
-                    else {
-                        // error handle
-                    }
-                  }
-                  char *cellValue = (char *) malloc((valueLength + 1) * sizeof(char));
-                  if (cellValue) {
-                    strcpy(cellValue, value);
-                    csv->columns[colIndex].values[csv->totalRows] = cellValue;
-                  }
-                  else {
-                    // error handle
-                  }
-                  if (code == NEWLINE_CHARACTER) {
-                    csv -> totalRows++;
-                  }
-                  value = NULL;
-                  valueLength = 0;
-                  valueCount++;
-                } else {
+          while (true) {
+            code = fgetc(fp);
+            if (code == COMMA_CHARACTER || feof(fp)) {
+              data = (char *) realloc(data, (valueLength + 1) * sizeof(char));
+              data[valueLength] = '\0';
+              // printf("%s\n", data);
+              int colIndex = valueCount % csv->totalColumns;
+              int rowIndex = valueCount / csv->totalColumns;
+              char **values = csv->columns[colIndex].values;
+              if (rowIndex > 0) {
+                values = (char **) realloc(values, (valueCount + 1) * sizeof(char *));
+                if (!values) {
                   // error handle
                 }
-              } else {
-                if (valueLength == 0) {
-                  value = (char * ) malloc(sizeof(char));
-                  if (value) {
-                    value[valueLength] = (char) code;
-                  } else {
-                    // handle error
-                  }
-                } else {
-                  value = (char * ) realloc(value, (valueLength + 1) * sizeof(char));
-                  if (value) {
-                    value[valueLength] = (char) code;
-                  } else {
-                    // handle error
-                  }
+              }
+              else {
+                values = (char **) malloc(sizeof(char *));
+                if (!values) {
+                  // error handle
+                }
+              }
+              values[rowIndex] = (char *) malloc(strlen(data) * sizeof(char));
+              if (values[rowIndex]) {
+                strcpy(values[rowIndex], data);
+                csv->columns[colIndex].values = values;
+                valueCount++;
+                valueLength = 0;
+                data = NULL;
+                if (feof(fp)) {
+                  break;
+                }
+              }
+              else {
+                // error handle
+              }
+            }
+            else {
+              if (valueLength == 0) {
+                data = (char *) malloc(sizeof(char));
+                if (data) {
+                  data[valueLength] = (char) code;
+                  valueLength++;
+                }
+                else {
+                  // error handle
+                }
+              }
+              else {
+                data = (char *) realloc(data, (valueLength + 1) * sizeof(char));
+                if (data) {
+                  data[valueLength] = (char) code;
+                  valueLength++;
+                }
+                else {
+                  // error handle
                 }
               }
             }
