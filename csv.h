@@ -80,6 +80,7 @@ Csv * parse(const char * filePath) {
           char * data = NULL;
           _csvContext.csv-> totalRows = 0;
           _csvContext.csv-> totalColumns = 0;
+          _csvContext.status = PROCESSING;
 
           // abc,def,ghi\n
           // header parsing logic
@@ -91,12 +92,12 @@ Csv * parse(const char * filePath) {
               if (_csvContext.csv -> totalColumns == 0) {
                 _csvContext.csv-> columns = (CsvColumn * ) malloc(sizeof(CsvColumn));
                 if (_csvContext.csv-> columns) {
-                  // handle error
+                _csvContext.status = FAILED;
                 }
               } else {
                 _csvContext.csv -> columns = (CsvColumn * ) realloc(data, (_csvContext.csv -> totalColumns + 1) * sizeof(CsvColumn));
                 if (_csvContext.csv -> columns) {
-                  // handle error
+                _csvContext.status = FAILED;
                 }
               }
               _csvContext.csv -> columns[_csvContext.csv -> totalColumns].header.name = data;
@@ -116,14 +117,14 @@ Csv * parse(const char * filePath) {
                 if (data) {
                   data[headerLength] = (char) code;
                 } else {
-                  // handle error
+                  _csvContext.status = FAILED;
                 }
               } else {
                 data = (char * ) realloc(data, (headerLength + 1) * sizeof(char));
                 if (data) {
                   data[headerLength] = (char) code;
                 } else {
-                  // handle error
+                  _csvContext.status = FAILED;
                 }
               }
               headerLength++;
@@ -145,13 +146,13 @@ Csv * parse(const char * filePath) {
               if (rowIndex > 0) {
                 values = (char **) realloc(values, (valueCount + 1) * sizeof(char *));
                 if (!values) {
-                  // error handle
+                  _csvContext.status = FAILED;
                 }
               }
               else {
                 values = (char **) malloc(sizeof(char *));
                 if (!values) {
-                  // error handle
+                  _csvContext.status = FAILED;
                 }
               }
               values[rowIndex] = (char *) malloc(strlen(data) * sizeof(char));
@@ -169,7 +170,7 @@ Csv * parse(const char * filePath) {
                 }
               }
               else {
-                // error handle
+                _csvContext.status = FAILED;
               }
             }
             else {
@@ -180,7 +181,7 @@ Csv * parse(const char * filePath) {
                   valueLength++;
                 }
                 else {
-                  // error handle
+                  _csvContext.status = FAILED;
                 }
               }
               else {
@@ -190,21 +191,21 @@ Csv * parse(const char * filePath) {
                   valueLength++;
                 }
                 else {
-                  // error handle
+                  _csvContext.status = FAILED;
                 }
               }
             }
           }
         } else {
-          // error handling
+          _csvContext.status = FAILED;
         }
       } else {
-        // error handling
+        _csvContext.status = FAILED;
       }
     } else {
-      // error handling
+      _csvContext.status = FAILED;
     }
   } else {
-    // error handling
+    _csvContext.status = FAILED;
   }
 }
