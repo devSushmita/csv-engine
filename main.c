@@ -1,4 +1,4 @@
-// #define PARSE_CSV_IN_DEBUG_MODE
+#define PARSE_CSV_IN_DEBUG_MODE
 #include <stdio.h>
 #include "csv.h"
 
