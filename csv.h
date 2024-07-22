@@ -69,6 +69,44 @@ bool endsWith(const char * template, const char * suffix) {
   return templateLength >= suffixLength && strcmp(template + templateLength - suffixLength, suffix) == 0;
 }
 
+char *trimQuote(char *text) { 
+  int n = strlen(text);
+  if (text[0] == '"' && text[n - 1] == '"') {
+    for(int i = 0; i < n; i++) {
+      if (i == n - 2) {
+        text[i] = '\0';
+        break;
+      }
+      text[i] = text[i + 1];
+    }
+  }
+  return text; 
+}
+
+void freecsv() {  
+  if(_csvContext.status = FAILED) { 
+    if(_csvContext.csv) { 
+      if(_csvContext.csv -> columns){
+        for(int index = 0; index < _csvContext.csv -> totalColumns; index++) {
+          if(_csvContext.csv -> columns[index].header.name) { 
+            free(_csvContext.csv -> columns[index].header.name);
+            _csvContext.csv -> columns[index].header.name = NULL;
+          }
+          else{ 
+            free(_csvContext.csv -> columns[_csvContext.csv -> totalColumns].values);
+            _csvContext.csv -> columns[_csvContext.csv -> totalColumns].values = NULL;
+          }
+          for(int rowIndex = 0; index < _csvContext.csv -> totalRows; index++) {
+            if(_csvContext.csv -> columns[index].values[rowIndex]) {
+              free(_csvContext.csv->columns[index].values[rowIndex]);
+            }  
+          }
+        }
+      }
+    }
+  }
+}
+
 void headerParse() {
   int headerLength = 0;
   char *data = NULL;         
@@ -126,10 +164,9 @@ void valueParse() {
   char * value = NULL, *data = NULL;
   while (true) {
     code = fgetc(_csvContext.csvStream);
-      if (code == COMMA_CHARACTER || feof(_csvContext.csvStream)) {
+      if (code == COMMA_CHARACTER || code == NEWLINE_CHARACTER || feof(_csvContext.csvStream)) {
         data = (char *) realloc(data, (valueLength + 1) * sizeof(char));
         data[valueLength] = '\0';
-        // printf("%s\n", data);
         int colIndex = valueCount % _csvContext.csv->totalColumns;
         int rowIndex = valueCount / _csvContext.csv->totalColumns;
         char **values = _csvContext.csv->columns[colIndex].values;
@@ -147,7 +184,7 @@ void valueParse() {
         }
         values[rowIndex] = (char *) malloc(strlen(data) * sizeof(char));
         if (values[rowIndex]) {
-          strcpy(values[rowIndex], data);
+          strcpy(values[rowIndex], trimQuote(data));
           _csvContext.csv->columns[colIndex].values = values;
 #ifdef PARSE_CSV_IN_DEBUG_MODE
           printf("%s\n", _csvContext.csv->columns[colIndex].values[rowIndex]);
