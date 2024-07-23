@@ -69,7 +69,9 @@ bool endsWith(const char * template, const char * suffix) {
   return templateLength >= suffixLength && strcmp(template + templateLength - suffixLength, suffix) == 0;
 }
 
-char *trimQuote(char *text) { 
+char *trimQuote(char *text) {               //name,address
+// ABC,"\"Bally\",Howrah\nWB,India"
+// "Bally",Howrah WB,India
   int n = strlen(text);
   if (text[0] == '"' && text[n - 1] == '"') {
     for(int i = 0; i < n; i++) {
@@ -164,7 +166,9 @@ void valueParse() {
   char * value = NULL, *data = NULL;
   while (true) {
     code = fgetc(_csvContext.csvStream);
-      if (code == COMMA_CHARACTER || code == NEWLINE_CHARACTER || feof(_csvContext.csvStream)) {
+      bool hasStartedWithDoubleQuote = data && data[0] == '"';
+      bool enclosedWithinDoubleQuote = hasStartedWithDoubleQuote && data[valueLength - 1] == '"' && valueLength > 1;
+      if (enclosedWithinDoubleQuote || (!hasStartedWithDoubleQuote && (code == COMMA_CHARACTER || code == NEWLINE_CHARACTER || feof(_csvContext.csvStream)))) {
         data = (char *) realloc(data, (valueLength + 1) * sizeof(char));
         data[valueLength] = '\0';
         int colIndex = valueCount % _csvContext.csv->totalColumns;
