@@ -3,6 +3,7 @@
 #include "csv.h"
 
 int main() {
-    const char *filePath = "C:/Users/g/OneDrive/Documents/csv-engine/tests/sample1.csv";
-    parse(filePath);
+    const char *filePath = "./tests/sample1.csv";
+    Csv* result = parseCsv(filePath);
+    return 0;
 }
